@@ -10,14 +10,14 @@ spec:
       tasks:
         - name: go build
           box: golang
-          plugin: script
-          metadata: 
-            script: ls -al
+          commands: 
+            - ls -al
+            - echo hello world
+            
     - name: stage2
       workspace: /go/src/github.com/containerflow/containerflow
       tasks:
         - name: go test
           box: golang
-          plugin: script
-          metadata: 
-            script: go test
+          commands: 
+            - go test

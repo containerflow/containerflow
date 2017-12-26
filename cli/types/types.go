@@ -25,7 +25,8 @@ type Task struct {
 	Box       string
 	Workspace string
 	Plugin    string
-	Metadata  map[string]string
+	Commands  []string
+	Metadata  map[string]interface{}
 }
 
 type Stage struct {
@@ -46,6 +47,7 @@ type Pipeline struct {
 	Spec     Spec
 }
 
+// Execute Start pipeline process
 func (pipeline Pipeline) Execute(root string, number int) {
 	for _, stage := range pipeline.Spec.Stages {
 		fmt.Println("## Stage:" + stage.Name + " Process")
@@ -66,10 +68,7 @@ func (stage Stage) execute(namespace, name, root string) {
 }
 
 func (task Task) execute(namespace string, name string, stage string, root string, workspace string, cnum chan int) {
-	switch task.Plugin {
-	case "script":
-		executeContainer(namespace, name, stage, root, workspace, task)
-	}
+	executeContainer(namespace, name, stage, root, workspace, task)
 	cnum <- 1
 }
 
@@ -101,13 +100,19 @@ func executeContainer(namespace string, name string, stage string, root string, 
 		workspace = "/workspace"
 	}
 
+	entrypoint := []string{
+		"sh",
+		"-c",
+		strings.Join(task.Commands, "&&"),
+	}
+
 	c, err := cli.ContainerCreate(context.Background(), &container.Config{
 		Tty:          true,
 		Image:        task.Box,
 		AttachStdout: true,
 		AttachStderr: true,
-		Cmd:          strings.Split(task.Metadata["script"], " "),
 		WorkingDir:   workspace,
+		Entrypoint:   entrypoint,
 	}, &container.HostConfig{
 		AutoRemove: false,
 		Mounts: []mount.Mount{

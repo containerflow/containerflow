@@ -1,7 +1,19 @@
 ContainerFlow
 ==============
 
+## Example
+
+Install
+
 ```
+cd cli && go build -o ../bin/cflow
+cd ../ && export PATH=$PATH:`pwd`/bin
+```
+
+Start Pipeline
+
+```
+$ cflow
 Start Container FLow At Workspace: /go/src/github.com/containerflow/containerflow/cli
 ## Stage:stage1 Process
 --> Start Container:namespaces-name-stage1-go_build

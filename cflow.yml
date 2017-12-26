@@ -6,15 +6,15 @@ metadata:
 spec:
   stages:
     - name: stage1
-      workspace: /go/src/containerflow-cli
+      workspace: /go/src/github.com/containerflow/containerflow
       tasks:
         - name: go build
           box: golang
           plugin: script
           metadata: 
-            script: go build
+            script: go build cli/main.go
     - name: stage2
-      workspace: /go/src/containerflow-cli
+      workspace: /go/src/github.com/containerflow/containerflow
       tasks:
         - name: go test
           box: golang

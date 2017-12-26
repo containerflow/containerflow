@@ -107,7 +107,7 @@ func executeContainer(namespace string, name string, stage string, root string, 
 		Cmd:          strings.Split(task.Metadata["script"], " "),
 		WorkingDir:   workspace,
 	}, &container.HostConfig{
-		AutoRemove: true,
+		AutoRemove: false,
 		Mounts: []mount.Mount{
 			mount.Mount{
 				Type:   mount.TypeBind,

@@ -4,6 +4,14 @@ metadata:
   name: name
   namespace: namespaces
 spec:
+  services:
+    - name: database
+      box: mysql
+      environment:
+        - MYSQL_DATABASE=test
+        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    - name: cache
+      box: redis
   stages:
     - name: stage1
       workspace: /go/src/github.com/containerflow/containerflow
@@ -11,8 +19,12 @@ spec:
         - name: go build
           box: golang
           commands: 
+            - env
             - ls -al
             - echo hello world
+          environment:
+            - TEST=a
+            - B=b
             
     - name: stage2
       workspace: /go/src/github.com/containerflow/containerflow

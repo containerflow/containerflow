@@ -21,12 +21,13 @@ type Metadata struct {
 }
 
 type Task struct {
-	Name      string
-	Box       string
-	Workspace string
-	Plugin    string
-	Commands  []string
-	Metadata  map[string]interface{}
+	Name        string
+	Box         string
+	Workspace   string
+	Plugin      string
+	Commands    []string
+	Environment []string
+	Metadata    map[string]interface{}
 }
 
 type Stage struct {
@@ -36,8 +37,15 @@ type Stage struct {
 	cnum      chan int
 }
 
+type Service struct {
+	Name        string
+	Box         string
+	Environment []string
+}
+
 type Spec struct {
-	Stages []Stage
+	Stages   []Stage
+	Services []Service
 }
 
 type Pipeline struct {
@@ -49,6 +57,8 @@ type Pipeline struct {
 
 // Execute Start pipeline process
 func (pipeline Pipeline) Execute(root string, number int) {
+	fmt.Println("## Set Environment")
+
 	for _, stage := range pipeline.Spec.Stages {
 		fmt.Println("## Stage:" + stage.Name + " Process")
 		stage.execute(pipeline.Metadata.Namespace, pipeline.Metadata.Name, root)
@@ -113,6 +123,7 @@ func executeContainer(namespace string, name string, stage string, root string, 
 		AttachStderr: true,
 		WorkingDir:   workspace,
 		Entrypoint:   entrypoint,
+		Env:          task.Environment,
 	}, &container.HostConfig{
 		AutoRemove: false,
 		Mounts: []mount.Mount{

@@ -3,6 +3,8 @@ package types
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -118,16 +120,47 @@ func executeContainer(namespace string, name string, stage string, root string, 
 	}, &network.NetworkingConfig{}, containerName)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
 		return false
 	}
 
 	err = cli.ContainerStart(context.Background(), c.ID, types.ContainerStartOptions{})
 
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
 		return false
 	}
 
+	reader, err := cli.ContainerLogs(context.Background(), c.ID, types.ContainerLogsOptions{
+		ShowStdout: true,
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+		return false
+	}
+
+	b, err := ioutil.ReadAll(reader)
+
+	if err != nil {
+		log.Fatalln(err)
+		return false
+	}
+
+	fmt.Println(string(b))
+
+	cli.ContainerRemove(context.Background(), c.ID, types.ContainerRemoveOptions{
+		Force: true,
+	})
+
 	return true
+}
+
+// checkError args[0] force to interrupt programe
+func checkError(err error, args ...interface{}) (isError bool) {
+	if err != nil {
+		isError = true
+		log.Fatalln(err)
+	}
+	return
 }

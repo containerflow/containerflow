@@ -12,7 +12,7 @@ spec:
           box: golang
           plugin: script
           metadata: 
-            script: sh -c 'cd /tmp && ls -al'
+            script: ls -al
     - name: stage2
       workspace: /go/src/github.com/containerflow/containerflow
       tasks:

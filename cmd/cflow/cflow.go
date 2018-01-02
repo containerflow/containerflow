@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	model "github.com/containerflow/containerflow/cli/types"
+	model "github.com/containerflow/containerflow/pkg/types"
 	yaml "gopkg.in/yaml.v2"
 )
 

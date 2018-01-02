@@ -14,102 +14,68 @@ import (
 	"github.com/docker/docker/client"
 )
 
-type Metadata struct {
-	Name      string
-	Namespace string
-	Labels    map[string]string
-}
-
-type Task struct {
-	Name        string
-	Box         string
-	Workspace   string
-	Plugin      string
-	Commands    []string
-	Environment []string
-	Metadata    map[string]interface{}
-}
-
-type Stage struct {
-	Name      string
-	Tasks     []Task
-	Workspace string
-	cnum      chan int
-}
-
-type Service struct {
-	Name        string
-	Box         string
-	Environment []string
-}
-
-type Spec struct {
-	Stages   []Stage
-	Services []Service
-}
-
-type Pipeline struct {
-	Version  string
-	Kind     string
-	Metadata Metadata
-	Spec     Spec
-}
-
 // Execute Start pipeline process
 func (pipeline Pipeline) Execute(root string, number int) (err error) {
 	fmt.Println("## Set Build Environment")
-	services := make(map[string]string)
+
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
+	defer cli.Close()
+
+	services := []string{}
+	links := []string{}
 
 	for _, service := range pipeline.Spec.Services {
 		fmt.Println("--> Start service " + service.Name)
-		cid, err := service.start(pipeline.Metadata.Namespace, pipeline.Metadata.Name)
+		cid, err := service.start(cli, pipeline.Metadata.Namespace, pipeline.Metadata.Name)
 		if err == nil {
-			services[service.Name] = cid
+			services = append(services, cid)
+			links = append(links, fmt.Sprintf("%s:%s", cid, service.Name))
 		} else {
 			log.Fatalln(err)
 		}
 	}
 
 	fmt.Println("## Start Build")
+	fmt.Println(links, "links", len(links))
+
 	for _, stage := range pipeline.Spec.Stages {
 		fmt.Println("--> Stage:" + stage.Name + " Process")
-		stage.execute(pipeline.Metadata.Namespace, pipeline.Metadata.Name, root, services)
+		stage.execute(cli, pipeline.Metadata.Namespace, pipeline.Metadata.Name, root, links)
 	}
 
 	fmt.Println("## CleanUp Build Environment")
 
-	for name, cid := range services {
-		fmt.Println("--> Stop Service " + name)
-		forceRemoveContainer(cid)
+	for _, cid := range services {
+		forceRemoveContainer(cli, cid)
 	}
 
 	return
 }
 
-func (stage Stage) execute(namespace, name, root string, links map[string]string) {
+func (stage Stage) execute(cli *client.Client, namespace, name, root string, links []string) {
 	var size = len(stage.Tasks)
 	stage.cnum = make(chan int, size)
 	for _, task := range stage.Tasks {
-		go task.execute(namespace, name, stage.Name, root, stage.Workspace, stage.cnum, links)
+		go task.execute(cli, namespace, name, stage.Name, root, stage.Workspace, stage.cnum, links)
 	}
 	for i := 0; i < size; i++ {
 		<-stage.cnum
 	}
 }
 
-func (task Task) execute(namespace string, name string, stage string, root string, workspace string, cnum chan int, links map[string]string) {
-	executeContainer(namespace, name, stage, root, workspace, task, links)
+func (task Task) execute(cli *client.Client, namespace string, name string, stage string, root string, workspace string, cnum chan int, links []string) {
+	executeContainer(cli, namespace, name, stage, root, workspace, task, links)
 	cnum <- 1
 }
 
-func (service Service) start(namespace, name string) (cid string, err error) {
+func (service Service) start(cli *client.Client, namespace, name string) (cid string, err error) {
 	containerName := fmt.Sprintf("%s-%s-%s", namespace, name, service.Name)
 	containerName = strings.Replace(containerName, " ", "_", -1)
-
-	cli, err := client.NewEnvClient()
-	if err != nil {
-		return
-	}
 
 	_, err = cli.ImagePull(
 		context.Background(),
@@ -123,7 +89,7 @@ func (service Service) start(namespace, name string) (cid string, err error) {
 		return
 	}
 
-	cid, err = startContainer(&container.Config{
+	cid, err = startContainer(cli, &container.Config{
 		Tty:          true,
 		Image:        service.Box,
 		AttachStdout: true,
@@ -140,27 +106,9 @@ func (service Service) start(namespace, name string) (cid string, err error) {
 	return
 }
 
-func executeContainer(namespace string, name string, stage string, root string, workspace string, task Task, linkMap map[string]string) bool {
+func executeContainer(cli *client.Client, namespace string, name string, stage string, root string, workspace string, task Task, links []string) bool {
 	containerName := fmt.Sprintf("%s-%s-%s-%s", namespace, name, stage, task.Name)
 	containerName = strings.Replace(containerName, " ", "_", -1)
-
-	cli, err := client.NewEnvClient()
-	if err != nil {
-		return false
-	}
-
-	_, err = cli.ImagePull(
-		context.Background(),
-		task.Box,
-		types.ImagePullOptions{
-			All: true,
-		},
-	)
-
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
 
 	if workspace == "" {
 		workspace = "/workspace"
@@ -172,15 +120,7 @@ func executeContainer(namespace string, name string, stage string, root string, 
 		strings.Join(task.Commands, "&&"),
 	}
 
-	links := make([]string, len(linkMap))
-
-	for name, container := range linkMap {
-		links = append(links, fmt.Sprintf("%s:%s", container, name))
-	}
-
-	fmt.Println(links)
-
-	cid, err := startContainer(&container.Config{
+	cid, err := startContainer(cli, &container.Config{
 		Tty:          true,
 		Image:        task.Box,
 		AttachStdout: true,
@@ -190,7 +130,7 @@ func executeContainer(namespace string, name string, stage string, root string, 
 		Env:          task.Environment,
 	}, &container.HostConfig{
 		AutoRemove: false,
-		// Links:      links,
+		Links:      links,
 		Mounts: []mount.Mount{
 			mount.Mount{
 				Type:   mount.TypeBind,
@@ -202,6 +142,7 @@ func executeContainer(namespace string, name string, stage string, root string, 
 
 	if err != nil {
 		log.Fatalln(err)
+		forceRemoveContainer(cli, cid)
 		return false
 	}
 
@@ -222,7 +163,7 @@ func executeContainer(namespace string, name string, stage string, root string, 
 	}
 
 	fmt.Println(string(b))
-	err = forceRemoveContainer(cid)
+	err = forceRemoveContainer(cli, cid)
 
 	if err != nil {
 		log.Fatalln(err)
@@ -232,11 +173,17 @@ func executeContainer(namespace string, name string, stage string, root string, 
 	return true
 }
 
-func startContainer(config *container.Config, hostConfig *container.HostConfig, containerName string) (containerID string, err error) {
-	cli, err := client.NewEnvClient()
-	if err != nil {
-		log.Fatalln(err)
-		return
+func startContainer(cli *client.Client, config *container.Config, hostConfig *container.HostConfig, containerName string) (containerID string, err error) {
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
+		All: true,
+	})
+
+	for _, container := range containers {
+		for _, name := range container.Names {
+			if name == fmt.Sprintf("/%s", containerName) {
+				forceRemoveContainer(cli, container.ID)
+			}
+		}
 	}
 
 	c, err := cli.ContainerCreate(context.Background(), config, hostConfig, &network.NetworkingConfig{}, containerName)
@@ -255,13 +202,7 @@ func startContainer(config *container.Config, hostConfig *container.HostConfig, 
 	return c.ID, err
 }
 
-func forceRemoveContainer(cid string) (err error) {
-	cli, err := client.NewEnvClient()
-	if err != nil {
-		log.Fatalln(err)
-		return
-	}
-
+func forceRemoveContainer(cli *client.Client, cid string) (err error) {
 	err = cli.ContainerRemove(context.Background(), cid, types.ContainerRemoveOptions{
 		Force: true,
 	})

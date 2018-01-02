@@ -25,7 +25,6 @@ spec:
           environment:
             - TEST=a
             - B=b
-            
     - name: stage2
       workspace: /go/src/github.com/containerflow/containerflow
       tasks:

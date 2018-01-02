@@ -1,4 +1,4 @@
-package types
+package executor
 
 type Metadata struct {
 	Name      string

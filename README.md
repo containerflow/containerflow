@@ -8,28 +8,25 @@ ContainerFlow
 Install
 
 ```
-cd cli && go build -o ../bin/cflow
-cd ../ && export PATH=$PATH:`pwd`/bin
+cd cmd/cflow
+go install
+
+export $PATH=$GOPATH/bin:$PATH
 ```
 
 Start Pipeline
 
 ```
 $ cflow
-Start Container FLow At Workspace: /go/src/github.com/containerflow/containerflow/cli
-## Stage:stage1 Process
---> Start Container:namespaces-name-stage1-go_build
-total 12
-drwxr-xr-x 6 root root  204 Dec 26 07:45 .
-drwxr-xr-x 3 root root 4096 Dec 26 07:46 ..
-drwxr-xr-x 3 root root  102 Dec 26 04:38 .workspace
--rw-r--r-- 1 root root  521 Dec 26 07:42 cflow.yml
--rw-r--r-- 1 root root 1120 Dec 26 07:26 main.go
-drwxr-xr-x 3 root root  102 Dec 26 03:16 types
-
---> Success
-## Stage:stage2 Process
---> Start Container:namespaces-name-stage2-go_test
-
---> Success
+Start Container FLow At Workspace: /Users/zhengyunlong/Workspace/go/src/github.com/containerflow/containerflow
+## Set Build Environment
+--> Start service database
+--> Start service cache
+## Start Build
+[825c5715f8a48127bd35c0bcc47eda53473cd7973c46a7ceb06b4d824601d42e:database 647de7d799a567075b24bf795693a3c0c9d481596ef0f7e2e98ee1fbfac3fbdd:cache] links 2
+--> Stage:stage1 Process
+...
+--> Stage:stage2 Process
+...
+## CleanUp Build Environment
 ```

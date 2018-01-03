@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/containerflow/containerflow/pkg/oauth2"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -53,7 +54,21 @@ func (s *Server) GithubOAuthCallback(c *gin.Context) {
 
 //Health system health check endpoints
 func (s *Server) Health(c *gin.Context) {
+
+	session := sessions.Default(c)
+	var count int
+	v := session.Get("count")
+	if v == nil {
+		count = 0
+	} else {
+		count = v.(int)
+		count++
+	}
+	session.Set("count", count)
+	session.Save()
+
 	c.JSON(200, gin.H{
 		"message": "pong",
+		"count":   count,
 	})
 }

@@ -1,7 +1,23 @@
 ContainerFlow
 ==============
 
-> The Experiment
+> The Experiment Project
+
+## Required
+
+* cli: containerFlow command interface
+    * docker
+* server: containerFlow API
+    * mongodb
+* website: react base web ui
+
+## How To Develope
+
+Start Denpendency
+
+```
+docker-compose up -d
+```
 
 ## Example
 
@@ -30,3 +46,4 @@ Start Container FLow At Workspace: /Users/zhengyunlong/Workspace/go/src/github.c
 ...
 ## CleanUp Build Environment
 ```
+

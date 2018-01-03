@@ -1,3 +1,4 @@
 bin
 .workspace
 env.sh
+website/node_modules

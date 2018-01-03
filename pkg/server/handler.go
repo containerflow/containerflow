@@ -17,7 +17,7 @@ func (s *Server) GithubOAuthCallback(c *gin.Context) {
 	resp, err := oauth2.GithubOauthCallback(s.GithubClientID, s.GithubClientSecret, c.Query("code"), s.GithubRedirectURI, c.Query("state"))
 	if err != nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"message": err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -31,11 +31,23 @@ func (s *Server) GithubOAuthCallback(c *gin.Context) {
 		return
 	}
 
+	user, err := oauth2.FetchGithubUser(resp.AccessToken)
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"access_token": resp.AccessToken,
-		"token_type":   resp.TokenType,
-		"scope":        resp.Scope,
-		"user_type":    "github",
+		"accessToken": resp.AccessToken,
+		"tokenType":   resp.TokenType,
+		"scope":       resp.Scope,
+		"userType":    "github",
+		"name":        user.Name,
+		"email":       user.Email,
+		"avatarURL":   user.AvatarURL,
+		"login":       user.Login,
 	})
 }
 

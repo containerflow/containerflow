@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import createStore from './store/createStore'
 import { loginUserSuccess } from './store/authentication'
 import './styles/main.scss'
+import 'antd/dist/antd.css';
 
 // Store Initialization
 // ------------------------------------

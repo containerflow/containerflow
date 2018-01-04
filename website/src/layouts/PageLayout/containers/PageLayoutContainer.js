@@ -4,7 +4,7 @@ import PageLayout from '../components/PageLayout'
 import { logoutUser, loginUserSuccess } from '../../../store/authentication'
 
 const mapDispatchToProps = {
-    logout: logoutUser,
+    logout: () => logoutUser(),
     login: () => loginUserSuccess("token")
 }
   

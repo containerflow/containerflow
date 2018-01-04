@@ -2,8 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import createStore from './store/createStore'
 import { loginUserSuccess } from './store/authentication'
-import './styles/main.scss'
+
 import 'antd/dist/antd.css';
+import './styles/main.scss'
 
 // Store Initialization
 // ------------------------------------
@@ -13,9 +14,8 @@ const store = createStore()
 
 let jwt = localStorage.getItem('token');
 if (jwt) {
-  
+  store.dispatch(loginUserSuccess("jwt"))  
 }
-store.dispatch(loginUserSuccess("jwt"))
 
 // Render Setup
 // ------------------------------------

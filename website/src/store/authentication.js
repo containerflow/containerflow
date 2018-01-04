@@ -18,7 +18,8 @@ export function loginUserSuccess(token){
 export function logoutUser(){
     localStorage.clear()
     return {
-        type: LOGOUT_USER_SUCCESS
+        type: LOGOUT_USER_SUCCESS,
+        payload: ''
     }
 }
 

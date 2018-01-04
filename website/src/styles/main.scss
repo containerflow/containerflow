@@ -26,4 +26,21 @@ body {
   background: rgba(255,255,255,.2);  
   margin: 16px 24px 16px 0;
   float: left;
+  margin-left: 16px;
+}
+
+.cf-main-menu {
+  float: left;
+  line-height: 64px;
+}
+
+.cf-namespaces {
+  float: right;
+  ul {
+    line-height: 64px;
+  }
+}
+
+.cf-header-namespace-dropdow {
+  color: hsla(0,0%,100%,.65);
 }

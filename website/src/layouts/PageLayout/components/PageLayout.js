@@ -44,7 +44,6 @@ export const PageLayout = ({ children, token, logout, login }) => {
         <Header style={{ background: '#fff', textAlign: 'center'}}>
         </Header>
         <div className='container text-center'>
-          Token: { token }
           <div className='page-layout__viewport'>
             {children}
           </div>

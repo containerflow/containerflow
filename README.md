@@ -23,6 +23,28 @@ Start Denpendency
 docker-compose up -d
 ```
 
+## Document
+
+Install go-swagger
+
+```
+brew tap go-swagger/go-swagger
+brew install go-swagger
+```
+
+Generate Swagger Document
+
+```
+cd cmd/server
+swagger generate spec -o ./swagger.json
+```
+
+Start Swagger UI
+
+```
+swagger serve ./swagger.json
+```
+
 ## Example
 
 Install

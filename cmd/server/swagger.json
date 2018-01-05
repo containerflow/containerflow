@@ -1,0 +1,137 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "the purpose of this application is to provide an application\nthat is using plain go code to define an API\n\nThis should demonstrate all the possible comment annotations\nthat are available to turn go code into a fully compliant swagger 2.0 spec",
+    "title": "ContainerFlow API.",
+    "termsOfService": "there are no TOS at this moment, use at your own risk we take no responsibility",
+    "contact": {
+      "name": "Yunlong",
+      "url": "http://yunlzheng.github.io",
+      "email": "yunl.zheng@gmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    },
+    "version": "0.0.1"
+  },
+  "host": "localhost",
+  "basePath": "/v2",
+  "paths": {
+    "/oauth_callback": {
+      "get": {
+        "description": "you can get the oauth user info",
+        "tags": [
+          "oauth"
+        ],
+        "summary": "Github Oauth Callback Endpoint",
+        "operationId": "endpoint",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/oauthuser"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/ping": {
+      "get": {
+        "description": "You can check the system health status",
+        "tags": [
+          "healthcheck"
+        ],
+        "summary": "Check the containerFlow API Server is running",
+        "operationId": "endpoint",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/pong"
+          }
+        }
+      }
+    }
+  },
+  "responses": {
+    "error": {
+      "description": "Error system error response",
+      "headers": {
+        "error_description": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "oauthuser": {
+      "description": "OauthUser github oauth user response",
+      "headers": {
+        "accessToken": {
+          "type": "string"
+        },
+        "avatarURL": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "login": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "tokenType": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        }
+      }
+    },
+    "pong": {
+      "description": "Pong System Pong Response",
+      "headers": {
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "KEY",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ]
+}

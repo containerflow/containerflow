@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/containerflow/containerflow/pkg/oauth2"
+	"github.com/containerflow/containerflow/pkg/server/response"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -24,31 +25,30 @@ func (s *Server) GithubOAuthCallback(c *gin.Context) {
 	}
 
 	if resp.Error != "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":             resp.Error,
-			"error_description": resp.ErrorDescription,
-			"error_uri":         resp.ErrorURI,
+		c.JSON(http.StatusBadRequest, response.Error{
+			Error:            resp.Error,
+			ErrorDescription: resp.ErrorDescription,
 		})
 		return
 	}
 
 	user, err := oauth2.FetchGithubUser(resp.AccessToken)
 	if err != nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"error": err.Error(),
+		c.JSON(http.StatusServiceUnavailable, response.Error{
+			Error: err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"accessToken": resp.AccessToken,
-		"tokenType":   resp.TokenType,
-		"scope":       resp.Scope,
-		"userType":    "github",
-		"name":        user.Name,
-		"email":       user.Email,
-		"avatarURL":   user.AvatarURL,
-		"login":       user.Login,
+	c.JSON(http.StatusOK, response.OauthUser{
+		AccessToken: resp.AccessToken,
+		TokenType:   resp.TokenType,
+		Scope:       resp.Scope,
+		UserType:    "github",
+		Name:        user.Name,
+		Email:       user.Email,
+		AvatarURL:   user.AvatarURL,
+		Login:       user.Login,
 	})
 }
 
@@ -67,8 +67,8 @@ func (s *Server) Health(c *gin.Context) {
 	session.Set("count", count)
 	session.Save()
 
-	c.JSON(200, gin.H{
-		"message": "pong",
-		"count":   count,
+	c.JSON(200, response.Pong{
+		Message: "pong",
+		Count:   count,
 	})
 }

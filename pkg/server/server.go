@@ -29,8 +29,28 @@ func (s *Server) Start() {
 	store := sessions.NewMongoStore(c, 3600, true, []byte("secret"))
 	r.Use(sessions.Sessions("mysession", store))
 
+	// swagger:route GET /ping healthcheck endpoint
+	//
+	// Check the containerFlow API Server is running
+	//
+	// You can check the system health status
+	//
+	//     Responses:
+	//       200: pong
 	r.GET("/ping", s.Health)
 	r.GET("/oauth_redirect", s.GithubOauthRedirect)
+
+	// swagger:route GET /oauth_callback oauth endpoint
+	//
+	// Github Oauth Callback Endpoint
+	//
+	// you can get the oauth user info
+	//
+	//     Responses:
+	//       default: error
+	//       500: error
+	//       400: error
+	//       200: oauthuser
 	r.GET("/oauth_callback", s.GithubOAuthCallback)
 	r.Run()
 }

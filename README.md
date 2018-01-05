@@ -3,13 +3,17 @@ ContainerFlow
 
 > The Experiment Project
 
-## Required
+## Structure
 
 * cli: containerFlow command interface
-    * docker
 * server: containerFlow API
-    * mongodb
 * website: react base web ui
+
+## Require
+
+* docker
+* mongodb
+* goswagger: https://goswagger.io
 
 ## How To Develope
 
